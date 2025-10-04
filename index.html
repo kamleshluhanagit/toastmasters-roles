@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BRS Toastmasters Role Selector</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1, h2, h3 { margin-top: 20px; }
+    .member-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .roles { margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    table, th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    tr:nth-child(odd) { background-color: #eef7ff; }
+    button { margin-top: 10px; padding: 10px 15px; cursor: pointer; }
+    select { width: 100%; padding: 5px; }
+    .meeting { margin-top: 30px; }
+    .logo { max-height: 80px; }
+  </style>
+</head>
+<body>
+  <img src="https://lh3.googleusercontent.com/p/AF1QipPVYW9ttaOCrnoii0I5uPffN9PYeGM0KjOL21j5=s680-w680-h510-rw" alt="Toastmasters Logo" class="logo">
+  <h1>BRS Toastmasters Role Assignment</h1>
+
+  <label>Meeting Number: <input type="text" id="meetingNumber" placeholder="Enter meeting number"></label>
+
+  <p>Select attendees for the meeting:</p>
+  <div class="member-list" id="memberList"></div>
+
+  <button onclick="assignRoles()">Assign Roles Randomly</button>
+  <button onclick="confirmSelection()">Confirm Selection</button>
+
+  <div class="roles" id="rolesSection">
+    <h2>Role Assignments</h2>
+    <table id="rolesTable">
+      <tr><th>Role</th><th>Assigned To</th></tr>
+    </table>
+  </div>
+
+  <div class="meeting">
+    <h2>Finalized Meetings</h2>
+    <div id="finalMeetings"></div>
+  </div>
+
+  <button onclick="resetHistory()">Reset History</button>
+
+  <script>
+    const members = [
+      "TM Anupama", "TM Nisha", "TM Shafeek", "TM Asiya", "TM Ramya",
+      "TM Abhilash", "TM Yamini", "TM Ali", "TM Kamlesh", "TM Tushar",
+      "TM Rahula", "TM Sanal"
+    ];
+
+    const fixedRoles = {
+      "Sergant at Arms": "TM Anupama",
+      "Club President": "TM Nisha"
+    };
+
+    const rotatingRoles = [
+      "ToastMaster of the Day",
+      "Word Master and Grammarian",
+      "Timer",
+      "Table Topic Master",
+      "Prepared Speaker 1",
+      "Prepared Speaker 2"
+    ];
+
+    const memberListDiv = document.getElementById("memberList");
+    members.forEach(m => {
+      const label = document.createElement("label");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.value = m;
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(" " + m));
+      memberListDiv.appendChild(label);
+    });
+
+    let roleHistory = JSON.parse(localStorage.getItem("roleHistory")) || {};
+    let finalizedMeetings = JSON.parse(localStorage.getItem("finalizedMeetings")) || {};
+    renderFinalMeetings();
+
+    function assignRoles() {
+      const checked = Array.from(document.querySelectorAll("input[type=checkbox]:checked")).map(cb => cb.value);
+
+      if (checked.length < rotatingRoles.length) {
+        alert("Not enough attendees to fill all roles!");
+        return;
+      }
+
+      let available = [...checked];
+      let assignments = { ...fixedRoles };
+
+      rotatingRoles.forEach(role => {
+        let filtered = available.filter(m => roleHistory[role] !== m);
+        if (filtered.length === 0) filtered = available;
+
+        const idx = Math.floor(Math.random() * filtered.length);
+        const selected = filtered[idx];
+        assignments[role] = selected;
+
+        available = available.filter(m => m !== selected);
+        roleHistory[role] = selected;
+      });
+
+      localStorage.setItem("roleHistory", JSON.stringify(roleHistory));
+
+      renderTable(assignments, checked);
+    }
+
+    function renderTable(assignments, attendees) {
+      document.getElementById("rolesSection").style.display = "block";
+      const table = document.getElementById("rolesTable");
+      table.innerHTML = '<tr><th>Role</th><th>Assigned To</th></tr>';
+
+      for (let role in assignments) {
+        const row = document.createElement("tr");
+        const select = document.createElement("select");
+        attendees.forEach(a => {
+          const opt = document.createElement("option");
+          opt.value = a;
+          opt.text = a;
+          if (a === assignments[role]) opt.selected = true;
+          select.appendChild(opt);
+        });
+        row.innerHTML = `<td>${role}</td>`;
+        const cell = document.createElement("td");
+        cell.appendChild(select);
+        row.appendChild(cell);
+        table.appendChild(row);
+      }
+    }
+
+    function confirmSelection() {
+      const meetingNumber = document.getElementById("meetingNumber").value.trim();
+      if (!meetingNumber) {
+        alert("Please enter a meeting number.");
+        return;
+      }
+
+      const rows = document.querySelectorAll("#rolesTable tr");
+      let assignments = {};
+      rows.forEach((row, i) => {
+        if (i === 0) return;
+        const role = row.cells[0].innerText;
+        const selected = row.cells[1].querySelector("select").value;
+        assignments[role] = selected;
+      });
+
+      finalizedMeetings[meetingNumber] = assignments;
+      localStorage.setItem("finalizedMeetings", JSON.stringify(finalizedMeetings));
+
+      renderFinalMeetings();
+
+      document.getElementById("rolesSection").style.display = "none";
+    }
+
+    function renderFinalMeetings() {
+      const container = document.getElementById("finalMeetings");
+      container.innerHTML = "";
+      for (let meeting in finalizedMeetings) {
+        const section = document.createElement("div");
+        section.innerHTML = `<h3>Meeting ${meeting} <button onclick=\"deleteMeeting('${meeting}')\">Delete</button></h3>`;
+        const table = document.createElement("table");
+        table.innerHTML = '<tr><th>Role</th><th>Assigned To</th></tr>';
+        for (let role in finalizedMeetings[meeting]) {
+          const row = document.createElement("tr");
+          row.innerHTML = `<td>${role}</td><td>${finalizedMeetings[meeting][role]}</td>`;
+          table.appendChild(row);
+        }
+        section.appendChild(table);
+        container.appendChild(section);
+      }
+    }
+
+    function deleteMeeting(meeting) {
+      delete finalizedMeetings[meeting];
+      localStorage.setItem("finalizedMeetings", JSON.stringify(finalizedMeetings));
+      renderFinalMeetings();
+    }
+
+    function resetHistory() {
+      localStorage.removeItem("roleHistory");
+      roleHistory = {};
+      alert("Role history has been reset.");
+    }
+  </script>
+</body>
+</html>
