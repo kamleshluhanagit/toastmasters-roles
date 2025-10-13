@@ -1,189 +1,342 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>BRS Toastmasters Role Selector</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BRS Toastmasters — Role Manager & Analytics</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1, h2, h3 { margin-top: 20px; }
-    .member-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .roles { margin-top: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    table, th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    tr:nth-child(odd) { background-color: #eef7ff; }
-    button { margin-top: 10px; padding: 10px 15px; cursor: pointer; }
-    select { width: 100%; padding: 5px; }
-    .meeting { margin-top: 30px; }
-    .logo { max-height: 80px; }
+    body{font-family:Arial,Helvetica,sans-serif;margin:16px}
+    header{display:flex;align-items:center;gap:12px}
+    .logo{height:64px}
+    h1{margin:0}
+    .tabs{margin-top:18px}
+    .tab-buttons button{padding:8px 12px;margin-right:6px;border-radius:6px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer}
+    .tab-buttons button.active{background:#e6f0ff;border-color:#7aa7ff}
+    .view{display:none;margin-top:16px}
+    .view.active{display:block}
+    .member-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    label{display:block}
+    table{border-collapse:collapse;width:100%;margin-top:10px}
+    table,th,td{border:1px solid #ddd;padding:8px;text-align:left}
+    th{background:#f2f2f2}
+    .final-row-odd{background:#f9f9f9}
+    .final-row-even{background:#eef7ff}
+    .controls{margin-top:12px}
+    .small{font-size:13px;padding:6px 8px}
+    .muted{color:#666;font-size:13px}
+    .flex{display:flex;gap:8px;align-items:center}
+    .right{margin-left:auto}
+    footer{margin-top:30px;color:#555;font-size:13px}
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <img src="https://lh3.googleusercontent.com/p/AF1QipPVYW9ttaOCrnoii0I5uPffN9PYeGM0KjOL21j5=s680-w680-h510-rw" alt="Toastmasters Logo" class="logo">
-  <h1>BRS Toastmasters Role Assignment</h1>
+  <header>
+    <img class="logo" src="https://lh3.googleusercontent.com/p/AF1QipPVYW9ttaOCrnoii0I5uPffN9PYeGM0KjOL21j5=s680-w680-h510-rw" alt="logo">
+    <div>
+      <h1>BRS Toastmasters — Role Manager</h1>
+      <div class="muted">Manage roles, save to Google Sheets backend, and view analytics</div>
+    </div>
+  </header>
 
-  <label>Meeting Number: <input type="text" id="meetingNumber" placeholder="Enter meeting number"></label>
+  <div class="tabs">
+    <div class="tab-buttons">
+      <button id="tabAssignBtn" class="active">Role Assignment</button>
+      <button id="tabAnalyticsBtn">Member Analytics</button>
+    </div>
 
-  <p>Select attendees for the meeting:</p>
-  <div class="member-list" id="memberList"></div>
+    <!-- Role Assignment view -->
+    <div id="assignView" class="view active">
+      <div style="margin-top:12px">
+        <label>Meeting Number: <input id="meetingNumber" type="text" placeholder="e.g. 2025-10-13-001"></label>
+      </div>
 
-  <button onclick="assignRoles()">Assign Roles Randomly</button>
-  <button onclick="confirmSelection()">Confirm Selection</button>
+      <p style="margin-top:8px">Select attendees for the meeting:</p>
+      <div class="member-list" id="memberList"></div>
 
-  <div class="roles" id="rolesSection">
-    <h2>Role Assignments</h2>
-    <table id="rolesTable">
-      <tr><th>Role</th><th>Assigned To</th></tr>
-    </table>
+      <div class="controls flex">
+        <button class="small" onclick="assignRoles()">Assign Roles Randomly</button>
+        <button class="small" onclick="confirmSelection()">Confirm & Save to Sheet</button>
+        <button class="small" onclick="newMeeting()">New Meeting (clear selection)</button>
+        <button class="small" onclick="resetHistory()">Reset Local History</button>
+        <div class="right muted">Tip: After confirming, the assignment table hides and the confirmed list is saved to Google Sheets.</div>
+      </div>
+
+      <div id="rolesSection" style="margin-top:12px">
+        <h3>Role Assignments (editable)</h3>
+        <table id="rolesTable"><tr><th>Role</th><th>Assigned To</th></tr></table>
+      </div>
+
+      <div id="finalizeNotice" class="muted" style="margin-top:8px"></div>
+
+      <div style="margin-top:18px">
+        <h3>Saved Meetings (local view)</h3>
+        <div id="finalMeetings"></div>
+      </div>
+    </div>
+
+    <!-- Analytics view -->
+    <div id="analyticsView" class="view">
+      <div class="flex">
+        <div>
+          <label>Chart Type:
+            <select id="chartType">
+              <option value="bar">Bar Chart</option>
+              <option value="pie">Pie Chart (choose role/member)</option>
+            </select>
+          </label>
+        </div>
+        <div>
+          <label>Role Filter:
+            <select id="roleFilter">
+              <option value="ALL">All Roles</option>
+            </select>
+          </label>
+        </div>
+        <div>
+          <label>Member Filter:
+            <select id="memberFilter">
+              <option value="ALL">All Members</option>
+            </select>
+          </label>
+        </div>
+        <div class="right">
+          <button class="small" onclick="refreshAnalytics()">Refresh Analytics</button>
+          <button class="small" onclick="clearAnalyticsSheet()">Clear Sheet Data (careful)</button>
+        </div>
+      </div>
+
+      <div style="margin-top:18px">
+        <h3>Summary Table</h3>
+        <div id="summaryTableWrap"></div>
+      </div>
+
+      <div style="margin-top:18px">
+        <h3>Chart</h3>
+        <canvas id="analyticsChart" style="max-width:900px"></canvas>
+      </div>
+    </div>
+
   </div>
 
-  <div class="meeting">
-    <h2>Finalized Meetings</h2>
-    <div id="finalMeetings"></div>
-  </div>
+  <footer>
+    <div>Notes:</div>
+    <ul>
+      <li>This page will attempt to POST confirmed roles to your Google Apps Script web app. Replace <code>WEB_APP_URL</code> in the <code>WEB_APP_URL</code> variable in the script with your Apps Script URL.</li>
+      <li>Apps Script must be deployed as a Web App with "Execute as: Me" and "Who has access: Anyone (even anonymous)" for the POST/GET to work without auth.</li>
+    </ul>
+  </footer>
 
-  <button onclick="resetHistory()">Reset History</button>
+<script>
+// ========== Configuration ==========
+// REPLACE this with your Google Apps Script Web App URL (from Deploy -> New deployment -> Web app)
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyWd1wDiXD3-_PXkIfGHGZ_kvj0uFE94cusEei3CafoROHwaPYhtbTiKeGvP24WtBcx/exec'; // <<<--- replace this string with your Apps Script URL
 
-  <script>
-    const members = [
-      "TM Anupama", "TM Nisha", "TM Shafeek", "TM Asiya", "TM Ramya",
-      "TM Abhilash", "TM Yamini", "TM Ali", "TM Kamlesh", "TM Tushar",
-      "TM Rahula", "TM Sanal"
-    ];
+// Member & role lists
+const members = [
+  "TM Anupama","TM Nisha","TM Shafeek","TM Asiya","TM Ramya",
+  "TM Abhilash","TM Yamini","TM Ali","TM Kamlesh","TM Tushar",
+  "TM Rahula","TM Sanal"
+];
 
-    const fixedRoles = {
-      "Sergant at Arms": "TM Anupama",
-      "Club President": "TM Nisha"
-    };
+const fixedRoles = {
+  "Sergant at Arms": "TM Anupama",
+  "Club President": "TM Nisha"
+};
 
-    const rotatingRoles = [
-      "ToastMaster of the Day",
-      "Word Master and Grammarian",
-      "Timer",
-      "Table Topic Master",
-      "Prepared Speaker 1",
-      "Prepared Speaker 2"
-    ];
+const rotatingRoles = [
+  "ToastMaster of the Day",
+  "Word Master and Grammarian",
+  "Timer",
+  "Table Topic Master",
+  "Prepared Speaker 1",
+  "Prepared Speaker 2"
+];
 
-    const memberListDiv = document.getElementById("memberList");
-    members.forEach(m => {
-      const label = document.createElement("label");
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.value = m;
-      label.appendChild(cb);
-      label.appendChild(document.createTextNode(" " + m));
-      memberListDiv.appendChild(label);
+const allTrackedRoles = [
+  'ToastMaster of the Day','Word Master and Grammarian','Aah Counter','Grammarian','Timer','Table Topic Master','Speech Evaluator'
+];
+
+// ========== UI init ==========
+const memberListDiv = document.getElementById('memberList');
+members.forEach(m => {
+  const label = document.createElement('label');
+  const cb = document.createElement('input'); cb.type='checkbox'; cb.value=m;
+  label.appendChild(cb); label.appendChild(document.createTextNode(' ' + m));
+  memberListDiv.appendChild(label);
+});
+
+// Tabs
+const tabAssignBtn = document.getElementById('tabAssignBtn');
+const tabAnalyticsBtn = document.getElementById('tabAnalyticsBtn');
+const assignView = document.getElementById('assignView');
+const analyticsView = document.getElementById('analyticsView');
+
+tabAssignBtn.onclick = () => { tabAssignBtn.classList.add('active'); tabAnalyticsBtn.classList.remove('active'); assignView.classList.add('active'); analyticsView.classList.remove('active'); }
+tabAnalyticsBtn.onclick = () => { tabAnalyticsBtn.classList.add('active'); tabAssignBtn.classList.remove('active'); analyticsView.classList.add('active'); assignView.classList.remove('active'); refreshAnalytics(); }
+
+// Local storage for history & finalized
+let roleHistory = JSON.parse(localStorage.getItem('roleHistory')) || {};
+let finalizedMeetings = JSON.parse(localStorage.getItem('finalizedMeetings')) || {};
+renderFinalMeetings();
+
+// ========== Assignment logic ==========
+function assignRoles(){
+  const checked = Array.from(document.querySelectorAll("input[type=checkbox]:checked")).map(cb => cb.value);
+  if(checked.length < rotatingRoles.length){ alert('Not enough attendees to fill all roles!'); return; }
+  let available = [...checked];
+  let assignments = {...fixedRoles};
+  rotatingRoles.forEach(role => {
+    let filtered = available.filter(m => roleHistory[role] !== m);
+    if(filtered.length === 0) filtered = available;
+    const idx = Math.floor(Math.random()*filtered.length);
+    const selected = filtered[idx];
+    assignments[role] = selected;
+    available = available.filter(m => m !== selected);
+    roleHistory[role] = selected;
+  });
+  localStorage.setItem('roleHistory', JSON.stringify(roleHistory));
+  renderTable(assignments, checked);
+}
+
+function renderTable(assignments, attendees){
+  document.getElementById('rolesSection').style.display = 'block';
+  const table = document.getElementById('rolesTable');
+  table.innerHTML = '<tr><th>Role</th><th>Assigned To</th></tr>';
+  for(let role in assignments){
+    const row = document.createElement('tr');
+    const select = document.createElement('select');
+    attendees.forEach(a => { const opt=document.createElement('option'); opt.value=a; opt.text=a; if(a===assignments[role]) opt.selected=true; select.appendChild(opt); });
+    row.innerHTML = `<td>${role}</td>`;
+    const cell = document.createElement('td'); cell.appendChild(select); row.appendChild(cell); table.appendChild(row);
+  }
+}
+
+function confirmSelection(){
+  const meetingNumber = document.getElementById('meetingNumber').value.trim();
+  if(!meetingNumber){ alert('Please enter a meeting number.'); return; }
+  const rows = document.querySelectorAll('#rolesTable tr');
+  let assignments = {};
+  rows.forEach((row,i)=>{ if(i===0) return; const role=row.cells[0].innerText; const selected=row.cells[1].querySelector('select').value; assignments[role]=selected; });
+
+  // Save locally
+  finalizedMeetings[meetingNumber] = assignments; localStorage.setItem('finalizedMeetings', JSON.stringify(finalizedMeetings));
+  renderFinalMeetings();
+
+  // POST to Google Sheets via Apps Script for each role
+  if(WEB_APP_URL && WEB_APP_URL !== 'WEB_APP_URL'){
+    Object.keys(assignments).forEach(role => {
+      const payload = { meetingNumber, role, member: assignments[role] };
+      fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(payload) })
+      .then(r=>r.json()).then(console.log).catch(e=>console.warn('Sheet POST failed',e));
     });
+  } else {
+    console.warn('WEB_APP_URL not configured: data not sent to Google Sheets');
+  }
 
-    let roleHistory = JSON.parse(localStorage.getItem("roleHistory")) || {};
-    let finalizedMeetings = JSON.parse(localStorage.getItem("finalizedMeetings")) || {};
-    renderFinalMeetings();
+  // hide assignment area
+  document.getElementById('rolesSection').style.display = 'none';
+  document.getElementById('finalizeNotice').innerText = 'Assignments saved locally and (if configured) sent to Google Sheets.';
+}
 
-    function assignRoles() {
-      const checked = Array.from(document.querySelectorAll("input[type=checkbox]:checked")).map(cb => cb.value);
+function newMeeting(){
+  // clear checkboxes and show roles section again
+  document.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
+  document.getElementById('meetingNumber').value = '';
+  document.getElementById('rolesSection').style.display = 'block';
+  document.getElementById('rolesTable').innerHTML = '<tr><th>Role</th><th>Assigned To</th></tr>';
+  document.getElementById('finalizeNotice').innerText = '';
+}
 
-      if (checked.length < rotatingRoles.length) {
-        alert("Not enough attendees to fill all roles!");
-        return;
-      }
+function resetHistory(){ localStorage.removeItem('roleHistory'); roleHistory={}; alert('Local role history reset.'); }
 
-      let available = [...checked];
-      let assignments = { ...fixedRoles };
+// Final meetings local rendering with delete
+function renderFinalMeetings(){ const container=document.getElementById('finalMeetings'); container.innerHTML=''; for(let meeting in finalizedMeetings){ const section=document.createElement('div'); section.innerHTML = `<h4>Meeting ${meeting} <button onclick="deleteMeeting('${meeting}')">Delete</button></h4>`; const table=document.createElement('table'); table.innerHTML='<tr><th>Role</th><th>Assigned To</th></tr>'; let i=0; for(let role in finalizedMeetings[meeting]){ const row=document.createElement('tr'); row.className = (i%2===0)? 'final-row-even':'final-row-odd'; row.innerHTML=`<td>${role}</td><td>${finalizedMeetings[meeting][role]}</td>`; table.appendChild(row); i++; } section.appendChild(table); container.appendChild(section); } }
 
-      rotatingRoles.forEach(role => {
-        let filtered = available.filter(m => roleHistory[role] !== m);
-        if (filtered.length === 0) filtered = available;
+function deleteMeeting(meeting){ delete finalizedMeetings[meeting]; localStorage.setItem('finalizedMeetings', JSON.stringify(finalizedMeetings)); renderFinalMeetings(); }
 
-        const idx = Math.floor(Math.random() * filtered.length);
-        const selected = filtered[idx];
-        assignments[role] = selected;
+// ========== Analytics: fetch from Google Sheet and summarize ==========
+async function fetchSheetData(){
+  if(!WEB_APP_URL || WEB_APP_URL==='WEB_APP_URL'){ alert('Please set WEB_APP_URL in the script to your Apps Script URL before using remote analytics.'); return null; }
+  try{
+    const res = await fetch(WEB_APP_URL);
+    const rows = await res.json();
+    // Expecting rows array with objects {Meeting Number, Role, Member, Date}
+    return rows;
+  }catch(err){ console.warn('Failed to fetch sheet data',err); alert('Failed to fetch sheet data. Check Apps Script deployment and CORS settings.'); return null; }
+}
 
-        available = available.filter(m => m !== selected);
-        roleHistory[role] = selected;
-      });
+function buildSummaryTable(counts){
+  const wrap=document.getElementById('summaryTableWrap'); wrap.innerHTML='';
+  const table=document.createElement('table');
+  const headerRow=document.createElement('tr'); headerRow.innerHTML='<th>Member</th>' + allTrackedRoles.map(r=>`<th>${r}</th>`).join(''); table.appendChild(headerRow);
+  members.forEach(m=>{
+    const row=document.createElement('tr'); row.innerHTML = `<td>${m}</td>` + allTrackedRoles.map(r=>`<td>${counts[m] && counts[m][r] ? counts[m][r] : 0}</td>`).join(''); table.appendChild(row);
+  });
+  wrap.appendChild(table);
+}
 
-      localStorage.setItem("roleHistory", JSON.stringify(roleHistory));
+let chartInstance=null;
+async function refreshAnalytics(){
+  const data = await fetchSheetData(); if(!data) return;
+  // normalize key names if headers differ
+  // assume objects have keys: Meeting Number, Role, Member, Date OR meetingNumber, role, member
+  const normalized = data.map(r=>({ meeting: r['Meeting Number']||r.meetingNumber||r.meeting||'', role: r['Role']||r.role||r.Role||'', member: r['Member']||r.member||'' }));
 
-      renderTable(assignments, checked);
-    }
+  // build counts
+  const counts = {};
+  normalized.forEach(rec => { if(!rec.member || !rec.role) return; const m=rec.member; const role=rec.role; if(!counts[m]) counts[m]={}; if(!counts[m][role]) counts[m][role]=0; counts[m][role]++; });
+  buildSummaryTable(counts);
 
-    function renderTable(assignments, attendees) {
-      document.getElementById("rolesSection").style.display = "block";
-      const table = document.getElementById("rolesTable");
-      table.innerHTML = '<tr><th>Role</th><th>Assigned To</th></tr>';
+  // populate filters
+  const roleFilter=document.getElementById('roleFilter'); roleFilter.innerHTML=''; roleFilter.appendChild(new Option('ALL','ALL'));
+  const seenRoles = new Set(); normalized.forEach(r=>{ if(r.role) seenRoles.add(r.role); }); seenRoles.forEach(r=>roleFilter.appendChild(new Option(r,r)));
+  const memberFilter=document.getElementById('memberFilter'); memberFilter.innerHTML=''; memberFilter.appendChild(new Option('ALL','ALL')); members.forEach(m=>memberFilter.appendChild(new Option(m,m)));
 
-      for (let role in assignments) {
-        const row = document.createElement("tr");
-        const select = document.createElement("select");
-        attendees.forEach(a => {
-          const opt = document.createElement("option");
-          opt.value = a;
-          opt.text = a;
-          if (a === assignments[role]) opt.selected = true;
-          select.appendChild(opt);
-        });
-        row.innerHTML = `<td>${role}</td>`;
-        const cell = document.createElement("td");
-        cell.appendChild(select);
-        row.appendChild(cell);
-        table.appendChild(row);
-      }
-    }
+  // draw chart per selected options
+  const chartType=document.getElementById('chartType').value;
+  const selRole = document.getElementById('roleFilter').value;
+  const selMember = document.getElementById('memberFilter').value;
 
-    function confirmSelection() {
-      const meetingNumber = document.getElementById("meetingNumber").value.trim();
-      if (!meetingNumber) {
-        alert("Please enter a meeting number.");
-        return;
-      }
+  if(chartInstance) chartInstance.destroy();
 
-      const rows = document.querySelectorAll("#rolesTable tr");
-      let assignments = {};
-      rows.forEach((row, i) => {
-        if (i === 0) return;
-        const role = row.cells[0].innerText;
-        const selected = row.cells[1].querySelector("select").value;
-        assignments[role] = selected;
-      });
+  const ctx = document.getElementById('analyticsChart').getContext('2d');
 
-      finalizedMeetings[meetingNumber] = assignments;
-      localStorage.setItem("finalizedMeetings", JSON.stringify(finalizedMeetings));
-
-      renderFinalMeetings();
-
-      document.getElementById("rolesSection").style.display = "none";
-    }
-
-    function renderFinalMeetings() {
-      const container = document.getElementById("finalMeetings");
-      container.innerHTML = "";
-      for (let meeting in finalizedMeetings) {
-        const section = document.createElement("div");
-        section.innerHTML = `<h3>Meeting ${meeting} <button onclick=\"deleteMeeting('${meeting}')\">Delete</button></h3>`;
-        const table = document.createElement("table");
-        table.innerHTML = '<tr><th>Role</th><th>Assigned To</th></tr>';
-        for (let role in finalizedMeetings[meeting]) {
-          const row = document.createElement("tr");
-          row.innerHTML = `<td>${role}</td><td>${finalizedMeetings[meeting][role]}</td>`;
-          table.appendChild(row);
+  if(chartType==='bar'){
+    // show counts per member for selected role OR for all roles stacked
+    if(selRole==='ALL'){
+      const datasets = allTrackedRoles.map((role,idx)=>{
+        return {
+          label: role,
+          data: members.map(m => counts[m] && counts[m][role] ? counts[m][role] : 0)
         }
-        section.appendChild(table);
-        container.appendChild(section);
-      }
+      });
+      chartInstance = new Chart(ctx, {type:'bar', data:{labels:members, datasets:datasets}, options:{responsive:true, scales:{x:{stacked:true}, y:{stacked:true}}}});
+    } else {
+      const dataVals = members.map(m => counts[m] && counts[m][selRole] ? counts[m][selRole] : 0);
+      chartInstance = new Chart(ctx, {type:'bar', data:{labels:members, datasets:[{label:selRole, data:dataVals}]}, options:{responsive:true}});
     }
+  } else {
+    // pie chart: show distribution for a role across members OR show total for a single member
+    if(selMember!=='ALL'){
+      const memberCounts = allTrackedRoles.map(r=>counts[selMember] && counts[selMember][r] ? counts[selMember][r] : 0);
+      chartInstance = new Chart(ctx, {type:'pie', data:{labels:allTrackedRoles, datasets:[{data:memberCounts}]}, options:{responsive:true}});
+    } else if(selRole!=='ALL'){
+      const dataVals = members.map(m => counts[m] && counts[m][selRole] ? counts[m][selRole] : 0);
+      chartInstance = new Chart(ctx, {type:'pie', data:{labels:members, datasets:[{data:dataVals}]}, options:{responsive:true}});
+    } else {
+      // fallback: total roles per member
+      const totals = members.map(m => allTrackedRoles.reduce((sum,r)=>sum + (counts[m] && counts[m][r] ? counts[m][r] : 0),0));
+      chartInstance = new Chart(ctx, {type:'bar', data:{labels:members, datasets:[{label:'Total Roles', data:totals}]}, options:{responsive:true}});
+    }
+  }
+}
 
-    function deleteMeeting(meeting) {
-      delete finalizedMeetings[meeting];
-      localStorage.setItem("finalizedMeetings", JSON.stringify(finalizedMeetings));
-      renderFinalMeetings();
-    }
+// helper to clear the sheet via POST (this will append a special record or you can implement clearing in Apps Script)
+function clearAnalyticsSheet(){ if(!confirm('This will clear all data in the Google Sheet (if Apps Script supports it). Continue?')) return; if(WEB_APP_URL && WEB_APP_URL!=='WEB_APP_URL'){
+  fetch(WEB_APP_URL + '?action=clear', { method:'POST' }).then(r=>r.text()).then(t=>{ alert('Clear request sent. You may need to manually clear the sheet from Google Sheets.'); }).catch(e=>alert('Clear request failed: '+e));
+} else alert('WEB_APP_URL not configured.'); }
 
-    function resetHistory() {
-      localStorage.removeItem("roleHistory");
-      roleHistory = {};
-      alert("Role history has been reset.");
-    }
-  </script>
+</script>
 </body>
 </html>
