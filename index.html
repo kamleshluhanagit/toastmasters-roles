@@ -1,65 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>BRS Toastmasters — Role Manager & Analytics</title>
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;margin:16px}
-    header{display:flex;align-items:center;gap:12px}
-    .logo{height:64px}
-    h1{margin:0}
-    .tabs{margin-top:18px}
-    .tab-buttons button{padding:8px 12px;margin-right:6px;border-radius:6px;border:1px solid #ccc;background:#f7f7f7;cursor:pointer}
-    .tab-buttons button.active{background:#e6f0ff;border-color:#7aa7ff}
-    .view{display:none;margin-top:16px}
-    .view.active{display:block}
-    .member-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-    label{display:block}
-    table{border-collapse:collapse;width:100%;margin-top:10px}
-    table,th,td{border:1px solid #ddd;padding:8px;text-align:left}
-    th{background:#f2f2f2}
-    .final-row-odd{background:#f9f9f9}
-    .final-row-even{background:#eef7ff}
-    .controls{margin-top:12px}
-    .small{font-size:13px;padding:6px 8px}
-    .muted{color:#666;font-size:13px}
-    .flex{display:flex;gap:8px;align-items:center}
-    .right{margin-left:auto}
-    footer{margin-top:30px;color:#555;font-size:13px}
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BRS Toastmasters — Role Manager & Analytics (Dark)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{
+    --bg:#0b1220; --card:#0f1724; --muted:#98a0b3; --accent:#4f9cff; --success:#1db954;
+    --panel:#0c1521; --soft:#111827;
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;}
+  body{margin:0;background:linear-gradient(180deg,#051022 0%, #071428 100%);color:#e6eef8;padding:20px;}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  .logo{height:64px;border-radius:8px}
+  h1{margin:0;font-size:20px}
+  .muted{color:var(--muted);font-size:13px}
+  .tabs{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);}
+  .tab-buttons{display:flex;gap:8px;margin-bottom:12px}
+  .tab-buttons button{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#dbe9ff;padding:8px 12px;border-radius:8px;cursor:pointer}
+  .tab-buttons button.active{background:linear-gradient(90deg,var(--accent),#6fb7ff);color:#021025;border-box:0}
+  .view{display:none}
+  .view.active{display:block}
+  .panel{background:var(--card);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+  .member-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+  label.member{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.01);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
+  input[type="text"], select{background:#071124;border:1px solid rgba(255,255,255,0.04);color:#dfefff;padding:8px;border-radius:8px;width:260px}
+  button.btn{background:var(--accent);border:none;color:#021025;padding:8px 12px;border-radius:8px;cursor:pointer}
+  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#dfefff;padding:8px 12px;border-radius:8px;cursor:pointer}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:14px}
+  th{color:#cfe6ff;text-align:left}
+  .final-row-odd{background:rgba(255,255,255,0.01)}
+  .highlight{background:#0f3b24} /* cells >0 will use a greenish highlight */
+  .controls{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+  .flex-row{display:flex;gap:8px;align-items:center}
+  .right{margin-left:auto}
+  .small{font-size:13px;padding:6px 8px;border-radius:6px}
+  .muted-note{color:var(--muted);font-size:13px;margin-top:8px}
+  footer{margin-top:18px;color:var(--muted);font-size:13px}
+  @media(max-width:720px){.member-list{grid-template-columns:1fr} input[type="text"], select{width:100%}}
+</style>
 </head>
 <body>
-  <header>
-    <img class="logo" src="https://lh3.googleusercontent.com/p/AF1QipPVYW9ttaOCrnoii0I5uPffN9PYeGM0KjOL21j5=s680-w680-h510-rw" alt="logo">
-    <div>
-      <h1>BRS Toastmasters — Role Manager</h1>
-      <div class="muted">Manage roles, save to Google Sheets backend, and view analytics</div>
+<header>
+  <img src="https://lh3.googleusercontent.com/p/AF1QipPVYW9ttaOCrnoii0I5uPffN9PYeGM0KjOL21j5=s680-w680-h510-rw" alt="logo" class="logo">
+  <div>
+    <h1>BRS Toastmasters — Role Manager & Analytics</h1>
+    <div class="muted">Dark mode • Connected to Google Sheets backend</div>
+  </div>
+</header>
+
+<section class="tabs panel">
+  <div class="tab-buttons">
+    <button id="tabAssignBtn" class="active">Meeting Role Assignment</button>
+    <button id="tabAnalyticsBtn">Member Analytics</button>
+  </div>
+
+  <!-- Assignment View -->
+  <div id="assignView" class="view active">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <label>Meeting Number: <input id="meetingNumber" type="text" placeholder="e.g. 2025-10-22-001"></label>
+      <div class="right muted-note">Select attendees, then Assign → Confirm to save to Sheet</div>
     </div>
-  </header>
 
-  <div class="tabs">
-    <div class="tab-buttons">
-      <button id="tabAssignBtn" class="active">Role Assignment</button>
-      <button id="tabAnalyticsBtn">Member Analytics</button>
-    </div>
-
-    <!-- Role Assignment view -->
-    <div id="assignView" class="view active">
-      <div style="margin-top:12px">
-        <label>Meeting Number: <input id="meetingNumber" type="text" placeholder="e.g. 2025-10-13-001"></label>
-      </div>
-
-      <p style="margin-top:8px">Select attendees for the meeting:</p>
+    <div style="margin-top:12px" class="panel">
+      <div class="muted">Select attendees for the meeting:</div>
       <div class="member-list" id="memberList"></div>
 
-      <div class="controls flex">
-        <button class="small" onclick="assignRoles()">Assign Roles Randomly</button>
-        <button class="small" onclick="confirmSelection()">Confirm & Save to Sheet</button>
-        <button class="small" onclick="newMeeting()">New Meeting (clear selection)</button>
-        <button class="small" onclick="resetHistory()">Reset Local History</button>
-        <div class="right muted">Tip: After confirming, the assignment table hides and the confirmed list is saved to Google Sheets.</div>
+      <div class="controls">
+        <button class="btn" onclick="assignRoles()">Assign Roles Randomly</button>
+        <button class="btn" onclick="confirmSelection()">Confirm & Save to Sheet</button>
+        <button class="ghost" onclick="newMeeting()">New Meeting</button>
+        <button class="ghost" onclick="resetHistory()">Reset Local History</button>
       </div>
 
       <div id="rolesSection" style="margin-top:12px">
@@ -67,72 +81,55 @@
         <table id="rolesTable"><tr><th>Role</th><th>Assigned To</th></tr></table>
       </div>
 
-      <div id="finalizeNotice" class="muted" style="margin-top:8px"></div>
-
-      <div style="margin-top:18px">
-        <h3>Saved Meetings (local view)</h3>
-        <div id="finalMeetings"></div>
-      </div>
+      <div id="finalizeNotice" class="muted-note"></div>
     </div>
 
-    <!-- Analytics view -->
-    <div id="analyticsView" class="view">
-      <div class="flex">
-        <div>
-          <label>Chart Type:
-            <select id="chartType">
-              <option value="bar">Bar Chart</option>
-              <option value="pie">Pie Chart (choose role/member)</option>
-            </select>
-          </label>
-        </div>
-        <div>
-          <label>Role Filter:
-            <select id="roleFilter">
-              <option value="ALL">All Roles</option>
-            </select>
-          </label>
-        </div>
-        <div>
-          <label>Member Filter:
-            <select id="memberFilter">
-              <option value="ALL">All Members</option>
-            </select>
-          </label>
-        </div>
+    <div style="margin-top:16px">
+      <h3>Saved Meetings (local)</h3>
+      <div id="finalMeetings"></div>
+    </div>
+  </div>
+
+  <!-- Analytics View -->
+  <div id="analyticsView" class="view">
+    <div class="panel">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <label>Member Filter:
+          <select id="memberFilter"></select>
+        </label>
+
+        <label>Chart Type:
+          <select id="chartType">
+            <option value="bar">Horizontal Bar (roles on Y)</option>
+            <option value="pie">Pie Chart (role distribution)</option>
+          </select>
+        </label>
+
         <div class="right">
-          <button class="small" onclick="refreshAnalytics()">Refresh Analytics</button>
-          <button class="small" onclick="clearAnalyticsSheet()">Clear Sheet Data (careful)</button>
+          <button class="btn" onclick="refreshAnalytics()">Refresh Analytics</button>
         </div>
       </div>
 
-      <div style="margin-top:18px">
-        <h3>Summary Table</h3>
+      <div style="margin-top:12px">
+        <h4>Summary Table</h4>
         <div id="summaryTableWrap"></div>
       </div>
 
-      <div style="margin-top:18px">
-        <h3>Chart</h3>
-        <canvas id="analyticsChart" style="max-width:900px"></canvas>
+      <div style="margin-top:12px">
+        <h4>Chart</h4>
+        <canvas id="analyticsChart" style="max-width:100%;height:420px"></canvas>
       </div>
     </div>
-
   </div>
+</section>
 
-  <footer>
-    <div>Notes:</div>
-    <ul>
-      <li>This page will attempt to POST confirmed roles to your Google Apps Script web app. Replace <code>WEB_APP_URL</code> in the <code>WEB_APP_URL</code> variable in the script with your Apps Script URL.</li>
-      <li>Apps Script must be deployed as a Web App with "Execute as: Me" and "Who has access: Anyone (even anonymous)" for the POST/GET to work without auth.</li>
-    </ul>
-  </footer>
+<footer class="muted-note">Note: The page posts confirmed roles to your Google Apps Script; ensure the script is deployed as Web App with access set to Anyone.</footer>
 
 <script>
-// ========== Configuration ==========
-// REPLACE this with your Google Apps Script Web App URL (from Deploy -> New deployment -> Web app)
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyWd1wDiXD3-_PXkIfGHGZ_kvj0uFE94cusEei3CafoROHwaPYhtbTiKeGvP24WtBcx/exec'; // <<<--- replace this string with your Apps Script URL
+/* --------- Configuration --------- */
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyWd1wDiXD3-_PXkIfGHGZ_kvj0uFE94cusEei3CafoROHwaPYhtbTiKeGvP24WtBcx/exec';
 
-// Member & role lists
+/* Members and roles */
 const members = [
   "TM Anupama","TM Nisha","TM Shafeek","TM Asiya","TM Ramya",
   "TM Abhilash","TM Yamini","TM Ali","TM Kamlesh","TM Tushar",
@@ -146,41 +143,42 @@ const fixedRoles = {
 
 const rotatingRoles = [
   "ToastMaster of the Day",
-  "Word Master and Grammarian",
+  "Word Master",
+  "Aah Counter",
+  "Speech",
   "Timer",
   "Table Topic Master",
-  "Prepared Speaker 1",
-  "Prepared Speaker 2"
+  "Speech Evaluator"
 ];
 
-const allTrackedRoles = [
-  'ToastMaster of the Day','Word Master and Grammarian','Aah Counter','Grammarian','Timer','Table Topic Master','Speech Evaluator'
-];
+const allTrackedRoles = rotatingRoles.slice(); // for analytics
 
-// ========== UI init ==========
+/* --------- UI init --------- */
 const memberListDiv = document.getElementById('memberList');
 members.forEach(m => {
   const label = document.createElement('label');
+  label.className = 'member';
   const cb = document.createElement('input'); cb.type='checkbox'; cb.value=m;
-  label.appendChild(cb); label.appendChild(document.createTextNode(' ' + m));
+  label.appendChild(cb);
+  label.appendChild(document.createTextNode(' ' + m));
   memberListDiv.appendChild(label);
 });
 
-// Tabs
+/* Tabs */
 const tabAssignBtn = document.getElementById('tabAssignBtn');
 const tabAnalyticsBtn = document.getElementById('tabAnalyticsBtn');
 const assignView = document.getElementById('assignView');
 const analyticsView = document.getElementById('analyticsView');
 
-tabAssignBtn.onclick = () => { tabAssignBtn.classList.add('active'); tabAnalyticsBtn.classList.remove('active'); assignView.classList.add('active'); analyticsView.classList.remove('active'); }
-tabAnalyticsBtn.onclick = () => { tabAnalyticsBtn.classList.add('active'); tabAssignBtn.classList.remove('active'); analyticsView.classList.add('active'); assignView.classList.remove('active'); refreshAnalytics(); }
+tabAssignBtn.onclick = () => { tabAssignBtn.classList.add('active'); tabAnalyticsBtn.classList.remove('active'); assignView.classList.add('active'); analyticsView.classList.remove('active'); };
+tabAnalyticsBtn.onclick = () => { tabAnalyticsBtn.classList.add('active'); tabAssignBtn.classList.remove('active'); analyticsView.classList.add('active'); assignView.classList.remove('active'); refreshAnalytics(); };
 
-// Local storage for history & finalized
+/* Local storage */
 let roleHistory = JSON.parse(localStorage.getItem('roleHistory')) || {};
 let finalizedMeetings = JSON.parse(localStorage.getItem('finalizedMeetings')) || {};
 renderFinalMeetings();
 
-// ========== Assignment logic ==========
+/* --------- Assignment logic --------- */
 function assignRoles(){
   const checked = Array.from(document.querySelectorAll("input[type=checkbox]:checked")).map(cb => cb.value);
   if(checked.length < rotatingRoles.length){ alert('Not enough attendees to fill all roles!'); return; }
@@ -212,130 +210,148 @@ function renderTable(assignments, attendees){
   }
 }
 
+/* Confirm selection: save locally and POST to Google Sheet */
 function confirmSelection(){
   const meetingNumber = document.getElementById('meetingNumber').value.trim();
   if(!meetingNumber){ alert('Please enter a meeting number.'); return; }
   const rows = document.querySelectorAll('#rolesTable tr');
   let assignments = {};
   rows.forEach((row,i)=>{ if(i===0) return; const role=row.cells[0].innerText; const selected=row.cells[1].querySelector('select').value; assignments[role]=selected; });
-
-  // Save locally
   finalizedMeetings[meetingNumber] = assignments; localStorage.setItem('finalizedMeetings', JSON.stringify(finalizedMeetings));
   renderFinalMeetings();
 
-  // POST to Google Sheets via Apps Script for each role
-  if(WEB_APP_URL && WEB_APP_URL !== 'WEB_APP_URL'){
+  // POST each role as a row to Google Sheets (Apps Script)
+  if(WEB_APP_URL && WEB_APP_URL!=='WEB_APP_URL'){
     Object.keys(assignments).forEach(role => {
       const payload = { meetingNumber, role, member: assignments[role] };
-      fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify(payload) })
-      .then(r=>r.json()).then(console.log).catch(e=>console.warn('Sheet POST failed',e));
+      fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) })
+      .then(r=>r.json()).then(()=>{}).catch(e=>console.warn('Sheet POST failed',e));
     });
   } else {
-    console.warn('WEB_APP_URL not configured: data not sent to Google Sheets');
+    console.warn('WEB_APP_URL not configured');
   }
 
-  // hide assignment area
+  // hide assignment area after confirming
   document.getElementById('rolesSection').style.display = 'none';
-  document.getElementById('finalizeNotice').innerText = 'Assignments saved locally and (if configured) sent to Google Sheets.';
+  document.getElementById('finalizeNotice').innerText = 'Assignments saved locally and sent to Google Sheets (if configured).';
 }
 
+/* New meeting */
 function newMeeting(){
-  // clear checkboxes and show roles section again
   document.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
-  document.getElementById('meetingNumber').value = '';
-  document.getElementById('rolesSection').style.display = 'block';
+  document.getElementById('meetingNumber').value='';
+  document.getElementById('rolesSection').style.display='block';
   document.getElementById('rolesTable').innerHTML = '<tr><th>Role</th><th>Assigned To</th></tr>';
   document.getElementById('finalizeNotice').innerText = '';
 }
 
+/* Reset history */
 function resetHistory(){ localStorage.removeItem('roleHistory'); roleHistory={}; alert('Local role history reset.'); }
 
-// Final meetings local rendering with delete
-function renderFinalMeetings(){ const container=document.getElementById('finalMeetings'); container.innerHTML=''; for(let meeting in finalizedMeetings){ const section=document.createElement('div'); section.innerHTML = `<h4>Meeting ${meeting} <button onclick="deleteMeeting('${meeting}')">Delete</button></h4>`; const table=document.createElement('table'); table.innerHTML='<tr><th>Role</th><th>Assigned To</th></tr>'; let i=0; for(let role in finalizedMeetings[meeting]){ const row=document.createElement('tr'); row.className = (i%2===0)? 'final-row-even':'final-row-odd'; row.innerHTML=`<td>${role}</td><td>${finalizedMeetings[meeting][role]}</td>`; table.appendChild(row); i++; } section.appendChild(table); container.appendChild(section); } }
+/* Final meetings rendering */
+function renderFinalMeetings(){ const container=document.getElementById('finalMeetings'); container.innerHTML=''; for(let meeting in finalizedMeetings){ const section=document.createElement('div'); section.className='panel'; section.style.marginBottom='10px'; let html=`<div style="display:flex;align-items:center;justify-content:space-between"><strong>Meeting ${meeting}</strong><div><button class="ghost" onclick="deleteMeeting('${meeting}')">Delete</button></div></div>`; html += '<table><tr><th>Role</th><th>Assigned To</th></tr>'; let i=0; for(let role in finalizedMeetings[meeting]){ const cls = (i%2===0)? 'final-row-even':'final-row-odd'; html += `<tr class="${cls}"><td>${role}</td><td>${finalizedMeetings[meeting][role]}</td></tr>`; i++; } html += '</table>'; section.innerHTML = html; container.appendChild(section);} }
 
 function deleteMeeting(meeting){ delete finalizedMeetings[meeting]; localStorage.setItem('finalizedMeetings', JSON.stringify(finalizedMeetings)); renderFinalMeetings(); }
 
-// ========== Analytics: fetch from Google Sheet and summarize ==========
+/* --------- Analytics --------- */
+// Member filter: only single-member selection allowed (no 'ALL')
+const memberFilter = document.getElementById('memberFilter');
+members.forEach(m => { const opt = new Option(m,m); memberFilter.appendChild(opt); });
+// ensure a default selected member
+if(memberFilter.options.length) memberFilter.selectedIndex = 0;
+
+let chartInstance = null;
+
 async function fetchSheetData(){
-  if(!WEB_APP_URL || WEB_APP_URL==='WEB_APP_URL'){ alert('Please set WEB_APP_URL in the script to your Apps Script URL before using remote analytics.'); return null; }
   try{
     const res = await fetch(WEB_APP_URL);
     const rows = await res.json();
-    // Expecting rows array with objects {Meeting Number, Role, Member, Date}
     return rows;
-  }catch(err){ console.warn('Failed to fetch sheet data',err); alert('Failed to fetch sheet data. Check Apps Script deployment and CORS settings.'); return null; }
+  }catch(err){
+    console.warn('Failed to fetch sheet data',err);
+    alert('Failed to fetch sheet data. Check Apps Script deployment and access.');
+    return null;
+  }
 }
 
 function buildSummaryTable(counts){
-  const wrap=document.getElementById('summaryTableWrap'); wrap.innerHTML='';
-  const table=document.createElement('table');
-  const headerRow=document.createElement('tr'); headerRow.innerHTML='<th>Member</th>' + allTrackedRoles.map(r=>`<th>${r}</th>`).join(''); table.appendChild(headerRow);
-  members.forEach(m=>{
-    const row=document.createElement('tr'); row.innerHTML = `<td>${m}</td>` + allTrackedRoles.map(r=>`<td>${counts[m] && counts[m][r] ? counts[m][r] : 0}</td>`).join(''); table.appendChild(row);
+  const wrap = document.getElementById('summaryTableWrap'); wrap.innerHTML='';
+  const table = document.createElement('table');
+  const header = document.createElement('tr');
+  header.innerHTML = '<th>Member</th>' + allTrackedRoles.map(r=>`<th>${r}</th>`).join('');
+  table.appendChild(header);
+  members.forEach(m => {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${m}</td>` + allTrackedRoles.map(r=>`<td ${ (counts[m] && counts[m][r]) ? 'class="highlight"' : '' }>${counts[m] && counts[m][r] ? counts[m][r] : 0}</td>`).join('');
+    table.appendChild(row);
   });
   wrap.appendChild(table);
 }
 
-let chartInstance=null;
-async function refreshAnalytics(){
-  const data = await fetchSheetData(); if(!data) return;
-  // normalize key names if headers differ
-  // assume objects have keys: Meeting Number, Role, Member, Date OR meetingNumber, role, member
-  const normalized = data.map(r=>({ meeting: r['Meeting Number']||r.meetingNumber||r.meeting||'', role: r['Role']||r.role||r.Role||'', member: r['Member']||r.member||'' }));
+function normalizeRows(rows){
+  // Accept rows with headers or keys: Meeting Number|Role|Member|Date  OR keys meetingNumber/role/member
+  return rows.map(r => ({ meeting: r['Meeting Number']||r.meetingNumber||r.meeting||'', role: r['Role']||r.role||r.Role||'', member: r['Member']||r.member||'' }));
+}
 
-  // build counts
+async function refreshAnalytics(){
+  const rows = await fetchSheetData(); if(!rows) return;
+  const normalized = normalizeRows(rows);
+  // build counts per member per role
   const counts = {};
-  normalized.forEach(rec => { if(!rec.member || !rec.role) return; const m=rec.member; const role=rec.role; if(!counts[m]) counts[m]={}; if(!counts[m][role]) counts[m][role]=0; counts[m][role]++; });
+  normalized.forEach(rec => {
+    if(!rec.member || !rec.role) return;
+    const m = rec.member; const role = rec.role;
+    if(!counts[m]) counts[m] = {};
+    if(!counts[m][role]) counts[m][role] = 0;
+    counts[m][role]++;
+  });
   buildSummaryTable(counts);
 
-  // populate filters
-  const roleFilter=document.getElementById('roleFilter'); roleFilter.innerHTML=''; roleFilter.appendChild(new Option('ALL','ALL'));
-  const seenRoles = new Set(); normalized.forEach(r=>{ if(r.role) seenRoles.add(r.role); }); seenRoles.forEach(r=>roleFilter.appendChild(new Option(r,r)));
-  const memberFilter=document.getElementById('memberFilter'); memberFilter.innerHTML=''; memberFilter.appendChild(new Option('ALL','ALL')); members.forEach(m=>memberFilter.appendChild(new Option(m,m)));
+  // Chart behavior: MemberFilter has only one member selection -> show that member's distribution across roles
+  const selectedMember = memberFilter.value;
+  const chartType = document.getElementById('chartType').value;
 
-  // draw chart per selected options
-  const chartType=document.getElementById('chartType').value;
-  const selRole = document.getElementById('roleFilter').value;
-  const selMember = document.getElementById('memberFilter').value;
+  // prepare data for selected member
+  const dataForMember = allTrackedRoles.map(r => counts[selectedMember] && counts[selectedMember][r] ? counts[selectedMember][r] : 0);
 
+  // destroy previous chart
   if(chartInstance) chartInstance.destroy();
-
   const ctx = document.getElementById('analyticsChart').getContext('2d');
 
-  if(chartType==='bar'){
-    // show counts per member for selected role OR for all roles stacked
-    if(selRole==='ALL'){
-      const datasets = allTrackedRoles.map((role,idx)=>{
-        return {
-          label: role,
-          data: members.map(m => counts[m] && counts[m][role] ? counts[m][role] : 0)
-        }
-      });
-      chartInstance = new Chart(ctx, {type:'bar', data:{labels:members, datasets:datasets}, options:{responsive:true, scales:{x:{stacked:true}, y:{stacked:true}}}});
-    } else {
-      const dataVals = members.map(m => counts[m] && counts[m][selRole] ? counts[m][selRole] : 0);
-      chartInstance = new Chart(ctx, {type:'bar', data:{labels:members, datasets:[{label:selRole, data:dataVals}]}, options:{responsive:true}});
-    }
+  if(chartType === 'bar'){
+    // horizontal bar: roles on Y, counts on X for the selected member
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: allTrackedRoles,
+        datasets: [{ label: selectedMember, data: dataForMember, backgroundColor: 'rgba(79,156,255,0.85)' }]
+      },
+      options: {
+        indexAxis: 'y', // horizontal bars (roles on Y)
+        responsive: true,
+        scales: {
+          x: { title: { display: true, text: 'Count' } },
+          y: { title: { display: true, text: 'Roles' } }
+        },
+        plugins: { legend: { display: true } }
+      }
+    });
   } else {
-    // pie chart: show distribution for a role across members OR show total for a single member
-    if(selMember!=='ALL'){
-      const memberCounts = allTrackedRoles.map(r=>counts[selMember] && counts[selMember][r] ? counts[selMember][r] : 0);
-      chartInstance = new Chart(ctx, {type:'pie', data:{labels:allTrackedRoles, datasets:[{data:memberCounts}]}, options:{responsive:true}});
-    } else if(selRole!=='ALL'){
-      const dataVals = members.map(m => counts[m] && counts[m][selRole] ? counts[m][selRole] : 0);
-      chartInstance = new Chart(ctx, {type:'pie', data:{labels:members, datasets:[{data:dataVals}]}, options:{responsive:true}});
-    } else {
-      // fallback: total roles per member
-      const totals = members.map(m => allTrackedRoles.reduce((sum,r)=>sum + (counts[m] && counts[m][r] ? counts[m][r] : 0),0));
-      chartInstance = new Chart(ctx, {type:'bar', data:{labels:members, datasets:[{label:'Total Roles', data:totals}]}, options:{responsive:true}});
-    }
+    // pie chart: distribution of roles for selected member
+    chartInstance = new Chart(ctx, {
+      type: 'pie',
+      data: { labels: allTrackedRoles, datasets: [{ data: dataForMember, backgroundColor: allTrackedRoles.map((_,i)=>`hsl(${i*45 % 360} 70% 60%)`) }] },
+      options: { responsive: true, plugins: { legend: { position: 'right' } } }
+    });
   }
 }
 
-// helper to clear the sheet via POST (this will append a special record or you can implement clearing in Apps Script)
-function clearAnalyticsSheet(){ if(!confirm('This will clear all data in the Google Sheet (if Apps Script supports it). Continue?')) return; if(WEB_APP_URL && WEB_APP_URL!=='WEB_APP_URL'){
-  fetch(WEB_APP_URL + '?action=clear', { method:'POST' }).then(r=>r.text()).then(t=>{ alert('Clear request sent. You may need to manually clear the sheet from Google Sheets.'); }).catch(e=>alert('Clear request failed: '+e));
-} else alert('WEB_APP_URL not configured.'); }
+/* Ensure pie chart updates when changing chart type or member filter */
+document.getElementById('chartType').addEventListener('change', refreshAnalytics);
+memberFilter.addEventListener('change', refreshAnalytics);
+
+/* initial analytics load when switching tab */
+// handled by tab switch listener earlier which calls refreshAnalytics
 
 </script>
 </body>
