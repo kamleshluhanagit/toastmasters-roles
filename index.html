@@ -3,37 +3,59 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>BRS Toastmasters — Role Manager & Analytics (Dark)</title>
+<title>BRS Toastmasters — Role Manager & Analytics (Final)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   :root{
-    --bg:#0b1220; --card:#0f1724; --muted:#98a0b3; --accent:#4f9cff; --success:#1db954;
-    --panel:#0c1521; --soft:#111827;
+    --accent:#4f9cff;
+    --success:#1db954;
   }
+  /* Light theme variables */
+  :root.light{
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0b1220;
+    --muted: #556070;
+    --border: rgba(11,18,32,0.06);
+    --highlight: #e6f4ff;
+    --cell-high: #e6fff0;
+  }
+  /* Dark theme variables (default) */
+  :root.dark{
+    --bg:#071428;
+    --card:#0f1724;
+    --text:#e6eef8;
+    --muted:#98a0b3;
+    --border: rgba(255,255,255,0.03);
+    --highlight: rgba(255,255,255,0.02);
+    --cell-high: #0f3b24;
+  }
+
   *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;}
-  body{margin:0;background:linear-gradient(180deg,#051022 0%, #071428 100%);color:#e6eef8;padding:20px;}
-  header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  body{margin:0;background:var(--bg);color:var(--text);padding:18px;}
+  header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
   .logo{height:64px;border-radius:8px}
   h1{margin:0;font-size:20px}
   .muted{color:var(--muted);font-size:13px}
-  .tabs{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);}
+  .theme-toggle{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;background:transparent;border:1px solid var(--border);cursor:pointer}
+  .tabs{background:var(--card);padding:16px;border-radius:12px;border:1px solid var(--border);}
   .tab-buttons{display:flex;gap:8px;margin-bottom:12px}
-  .tab-buttons button{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#dbe9ff;padding:8px 12px;border-radius:8px;cursor:pointer}
+  .tab-buttons button{background:transparent;border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}
   .tab-buttons button.active{background:linear-gradient(90deg,var(--accent),#6fb7ff);color:#021025;border-box:0}
   .view{display:none}
   .view.active{display:block}
-  .panel{background:var(--card);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+  .panel{background:var(--card);padding:12px;border-radius:10px;border:1px solid var(--border)}
   .member-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
-  label.member{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.01);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02)}
-  input[type="text"], select{background:#071124;border:1px solid rgba(255,255,255,0.04);color:#dfefff;padding:8px;border-radius:8px;width:260px}
+  label.member{display:flex;align-items:center;gap:8px;background:var(--highlight);padding:8px;border-radius:8px;border:1px solid var(--border);color:var(--text)}
+  input[type="text"], select{background:transparent;border:1px solid var(--border);color:var(--text);padding:8px;border-radius:8px;width:260px}
   button.btn{background:var(--accent);border:none;color:#021025;padding:8px 12px;border-radius:8px;cursor:pointer}
-  button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#dfefff;padding:8px 12px;border-radius:8px;cursor:pointer}
-  table{width:100%;border-collapse:collapse;margin-top:10px}
-  th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:14px}
-  th{color:#cfe6ff;text-align:left}
-  .final-row-odd{background:rgba(255,255,255,0.01)}
-  .highlight{background:#0f3b24} /* cells >0 will use a greenish highlight */
+  button.ghost{background:transparent;border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;cursor:pointer}
+  table{width:100%;border-collapse:collapse;margin-top:10px;background:transparent}
+  th,td{padding:8px;border-bottom:1px solid var(--border);font-size:14px;color:var(--text)}
+  th{font-weight:600}
+  .final-row-odd{background:transparent}
+  .highlight-cell{background:var(--cell-high);color:var(--text);font-weight:600}
   .controls{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
   .flex-row{display:flex;gap:8px;align-items:center}
   .right{margin-left:auto}
@@ -41,6 +63,10 @@
   .muted-note{color:var(--muted);font-size:13px;margin-top:8px}
   footer{margin-top:18px;color:var(--muted);font-size:13px}
   @media(max-width:720px){.member-list{grid-template-columns:1fr} input[type="text"], select{width:100%}}
+
+  /* compact chart sizing */
+  .chart-wrap{max-width:900px;margin-top:12px}
+  canvas{display:block;max-width:100%;height:280px !important}
 </style>
 </head>
 <body>
@@ -48,8 +74,9 @@
   <img src="https://lh3.googleusercontent.com/p/AF1QipPVYW9ttaOCrnoii0I5uPffN9PYeGM0KjOL21j5=s680-w680-h510-rw" alt="logo" class="logo">
   <div>
     <h1>BRS Toastmasters — Role Manager & Analytics</h1>
-    <div class="muted">Dark mode • Connected to Google Sheets backend</div>
+    <div class="muted">Theme toggle • Compact charts • Google Sheets backend</div>
   </div>
+  <button id="themeToggle" class="theme-toggle" title="Toggle theme">🌙</button>
 </header>
 
 <section class="tabs panel">
@@ -95,7 +122,9 @@
     <div class="panel">
       <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
         <label>Member Filter:
-          <select id="memberFilter"></select>
+          <select id="memberFilter">
+            <option value="ALL">All Members</option>
+          </select>
         </label>
 
         <label>Chart Type:
@@ -115,9 +144,9 @@
         <div id="summaryTableWrap"></div>
       </div>
 
-      <div style="margin-top:12px">
+      <div style="margin-top:12px" class="chart-wrap">
         <h4>Chart</h4>
-        <canvas id="analyticsChart" style="max-width:100%;height:420px"></canvas>
+        <canvas id="analyticsChart"></canvas>
       </div>
     </div>
   </div>
@@ -152,6 +181,19 @@ const rotatingRoles = [
 ];
 
 const allTrackedRoles = rotatingRoles.slice(); // for analytics
+
+/* --------- Theme handling --------- */
+const root = document.documentElement;
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(t){
+  if(t === 'light'){ root.classList.remove('dark'); root.classList.add('light'); themeToggle.textContent = '☀️'; }
+  else { root.classList.remove('light'); root.classList.add('dark'); themeToggle.textContent = '🌙'; }
+  localStorage.setItem('theme', t);
+}
+// default dark unless saved
+const savedTheme = localStorage.getItem('theme') || 'dark';
+applyTheme(savedTheme);
+themeToggle.addEventListener('click', ()=>{ const cur = root.classList.contains('dark') ? 'dark':'light'; applyTheme(cur==='dark' ? 'light' : 'dark'); });
 
 /* --------- UI init --------- */
 const memberListDiv = document.getElementById('memberList');
@@ -254,11 +296,13 @@ function renderFinalMeetings(){ const container=document.getElementById('finalMe
 function deleteMeeting(meeting){ delete finalizedMeetings[meeting]; localStorage.setItem('finalizedMeetings', JSON.stringify(finalizedMeetings)); renderFinalMeetings(); }
 
 /* --------- Analytics --------- */
-// Member filter: only single-member selection allowed (no 'ALL')
 const memberFilter = document.getElementById('memberFilter');
+// populate filter with All + members
+memberFilter.innerHTML = '';
+memberFilter.appendChild(new Option('All Members','ALL'));
 members.forEach(m => { const opt = new Option(m,m); memberFilter.appendChild(opt); });
-// ensure a default selected member
-if(memberFilter.options.length) memberFilter.selectedIndex = 0;
+// default to ALL
+memberFilter.value = 'ALL';
 
 let chartInstance = null;
 
@@ -282,14 +326,16 @@ function buildSummaryTable(counts){
   table.appendChild(header);
   members.forEach(m => {
     const row = document.createElement('tr');
-    row.innerHTML = `<td>${m}</td>` + allTrackedRoles.map(r=>`<td ${ (counts[m] && counts[m][r]) ? 'class="highlight"' : '' }>${counts[m] && counts[m][r] ? counts[m][r] : 0}</td>`).join('');
+    row.innerHTML = `<td>${m}</td>` + allTrackedRoles.map(r=>{
+      const val = counts[m] && counts[m][r] ? counts[m][r] : 0;
+      return `<td ${ val>0 ? 'class="highlight-cell"' : '' }>${val}</td>`;
+    }).join('');
     table.appendChild(row);
   });
   wrap.appendChild(table);
 }
 
 function normalizeRows(rows){
-  // Accept rows with headers or keys: Meeting Number|Role|Member|Date  OR keys meetingNumber/role/member
   return rows.map(r => ({ meeting: r['Meeting Number']||r.meetingNumber||r.meeting||'', role: r['Role']||r.role||r.Role||'', member: r['Member']||r.member||'' }));
 }
 
@@ -307,52 +353,57 @@ async function refreshAnalytics(){
   });
   buildSummaryTable(counts);
 
-  // Chart behavior: MemberFilter has only one member selection -> show that member's distribution across roles
-  const selectedMember = memberFilter.value;
+  const selected = document.getElementById('memberFilter').value;
   const chartType = document.getElementById('chartType').value;
 
-  // prepare data for selected member
-  const dataForMember = allTrackedRoles.map(r => counts[selectedMember] && counts[selectedMember][r] ? counts[selectedMember][r] : 0);
+  // prepare data depending on selection
+  let labels = [];
+  let dataVals = [];
+  if(selected === 'ALL'){
+    // aggregate totals per role across all members
+    labels = allTrackedRoles;
+    dataVals = labels.map(role => {
+      let sum = 0;
+      for(const m in counts){ if(counts[m] && counts[m][role]) sum += counts[m][role]; }
+      return sum;
+    });
+  } else {
+    labels = allTrackedRoles;
+    dataVals = labels.map(role => counts[selected] && counts[selected][role] ? counts[selected][role] : 0);
+  }
 
   // destroy previous chart
   if(chartInstance) chartInstance.destroy();
   const ctx = document.getElementById('analyticsChart').getContext('2d');
 
   if(chartType === 'bar'){
-    // horizontal bar: roles on Y, counts on X for the selected member
     chartInstance = new Chart(ctx, {
       type: 'bar',
-      data: {
-        labels: allTrackedRoles,
-        datasets: [{ label: selectedMember, data: dataForMember, backgroundColor: 'rgba(79,156,255,0.85)' }]
-      },
+      data: { labels: labels, datasets: [{ label: selected === 'ALL' ? 'All Members (role totals)' : selected, data: dataVals, backgroundColor: 'rgba(79,156,255,0.85)' }] },
       options: {
-        indexAxis: 'y', // horizontal bars (roles on Y)
+        indexAxis: 'y',
         responsive: true,
-        scales: {
-          x: { title: { display: true, text: 'Count' } },
-          y: { title: { display: true, text: 'Roles' } }
-        },
+        maintainAspectRatio: false,
+        scales: { x: { title: { display: true, text: 'Count' } }, y: { title: { display: true, text: 'Roles' } } },
         plugins: { legend: { display: true } }
       }
     });
   } else {
-    // pie chart: distribution of roles for selected member
     chartInstance = new Chart(ctx, {
       type: 'pie',
-      data: { labels: allTrackedRoles, datasets: [{ data: dataForMember, backgroundColor: allTrackedRoles.map((_,i)=>`hsl(${i*45 % 360} 70% 60%)`) }] },
-      options: { responsive: true, plugins: { legend: { position: 'right' } } }
+      data: { labels: labels, datasets: [{ data: dataVals, backgroundColor: labels.map((_,i)=>`hsl(${i*45 % 360} 70% 60%)`) }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
     });
   }
 }
 
-/* Ensure pie chart updates when changing chart type or member filter */
+/* Ensure charts update when filter/type changes */
 document.getElementById('chartType').addEventListener('change', refreshAnalytics);
-memberFilter.addEventListener('change', refreshAnalytics);
+document.getElementById('memberFilter').addEventListener('change', refreshAnalytics);
 
-/* initial analytics load when switching tab */
-// handled by tab switch listener earlier which calls refreshAnalytics
+/* initial analytics load handled when tab clicked */
 
+/* load */
 </script>
 </body>
 </html>
